@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   Users, GraduationCap, Clock, TrendingUp, MoreVertical, BookOpen,
-  Activity, Award, ChevronUp, ChevronDown
+  ChevronUp, ChevronDown
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
@@ -46,9 +46,17 @@ const TeacherDashboard: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    supabase.from('students').select('*', { count: 'exact', head: true })
-      .then(({ count }) => { setStudentCount(count || 0); setLoading(false); })
-      .catch(() => { setStudentCount(156); setLoading(false); });
+    const fetchStudents = async () => {
+      try {
+        const { count } = await supabase.from('students').select('*', { count: 'exact', head: true });
+        setStudentCount(count || 0);
+      } catch (err) {
+        setStudentCount(156);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
   }, []);
 
   const attendanceData = [

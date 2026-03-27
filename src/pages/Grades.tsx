@@ -6,7 +6,7 @@ import {
   CheckCircle, AlertCircle, Loader2, BarChart2
 } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 import Toast from '../components/ui/Toast';
@@ -45,13 +45,17 @@ const TeacherGrades = () => {
 
   // Try to load from Supabase; fall back to demo data on error
   useEffect(() => {
-    supabase.from('students').select('id, name, email').order('name')
-      .then(({ data }) => {
+    const fetchStudents = async () => {
+      try {
+        const { data } = await supabase.from('students').select('id, name, email').order('name');
         if (data && data.length > 0) {
           setRows(data.map((s: any) => ({ ...s, midterm: 0, final: 0 })));
         }
-      })
-      .catch(() => { /* keep demo */ });
+      } catch (err) {
+        /* keep demo */
+      }
+    };
+    fetchStudents();
   }, [subject]);
 
   const updateScore = (id: string, field: 'midterm' | 'final', val: number) => {
@@ -241,15 +245,20 @@ const studentGradeData = [
 ];
 
 const StudentGrades = () => {
-  const { user } = useAuth();
   const [dbGrades, setDbGrades] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('grades').select('*').order('subject')
-      .then(({ data }) => { if (data && data.length > 0) setDbGrades(data); })
-      .catch(() => { })
-      .finally(() => setLoading(false));
+    const fetchGrades = async () => {
+      try {
+        const { data } = await supabase.from('grades').select('*').order('subject');
+        if (data && data.length > 0) setDbGrades(data);
+      } catch (err) {
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGrades();
   }, []);
 
   const grades = dbGrades.length > 0
